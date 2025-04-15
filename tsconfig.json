@@ -9,5 +9,6 @@
 		"moduleResolution": "node",
 		"resolveJsonModule": true
 	},
-	"include": ["src"]
+	"include": ["src"],
+	"typeRoots": ["./src/types", "./node_modules/@types"]
 }

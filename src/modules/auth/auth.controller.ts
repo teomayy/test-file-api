@@ -4,7 +4,11 @@ import { AuthService } from './auth.service'
 const authService = new AuthService()
 
 export class AuthController {
-	async signup(req: Request, res: Response) {
+	signup = async (req: Request, res: Response) => {
+		const { id, password } = req.body
+		if (!id || !password) {
+			return res.status(400).json({ message: 'id and password are required' })
+		}
 		try {
 			const tokens = await authService.register(req.body)
 			res.json(tokens)
@@ -13,7 +17,11 @@ export class AuthController {
 		}
 	}
 
-	async signin(req: Request, res: Response) {
+	signin = async (req: Request, res: Response) => {
+		const { id, password } = req.body
+		if (!id || !password) {
+			return res.status(400).json({ message: 'id and password are required' })
+		}
 		try {
 			const tokens = await authService.login(req.body)
 			res.json(tokens)
@@ -44,5 +52,11 @@ export class AuthController {
 		} catch (error) {
 			res.status(400).json({ message: (error as Error).message })
 		}
+	}
+
+	info = async (req: Request, res: Response) => {
+		const user = req.user
+		if (!user) return res.status(401).json({ message: 'Unauthorized' })
+		res.json({ id: user.userId })
 	}
 }

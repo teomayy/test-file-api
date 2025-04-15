@@ -38,33 +38,37 @@ export class AuthService {
 	}
 
 	async refreshToken(oldToken: string) {
+		let payload: any
+
 		try {
-			const payload = jwt.verify(
-				oldToken,
-				process.env.JWT_REFRESH_SECRET!
-			) as any
-			const session = await Session.findOne({
-				where: {
-					userId: payload.userId,
-					deviceId: payload.deviceId,
-					refreshToken: oldToken,
-				},
-			})
-
-			if (!session) throw new Error('Invalid session or token')
-
-			const newTokens = generateTokens({
+			payload = jwt.verify(oldToken, process.env.JWT_REFRESH_SECRET!)
+		} catch (error: any) {
+			if (error.name === 'TokenExpiredError') {
+				payload = jwt.decode(oldToken)
+				if (!payload) throw new Error('Unable to decode expired token')
+			} else {
+				throw new Error('Invalid refresh token')
+			}
+		}
+		const session = await Session.findOne({
+			where: {
 				userId: payload.userId,
 				deviceId: payload.deviceId,
-			})
+				refreshToken: oldToken,
+			},
+		})
 
-			session.refreshToken = newTokens.refreshToken
-			await session.save()
+		if (!session) throw new Error('Invalid session or token')
 
-			return newTokens
-		} catch (error) {
-			throw new Error('Invalid or expired refresh token')
-		}
+		const newTokens = generateTokens({
+			userId: payload.userId,
+			deviceId: payload.deviceId,
+		})
+
+		session.refreshToken = newTokens.refreshToken
+		await session.save()
+
+		return newTokens
 	}
 
 	async logout(refreshToken: string) {

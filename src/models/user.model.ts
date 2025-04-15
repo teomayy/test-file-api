@@ -13,7 +13,7 @@ User.init(
 			primaryKey: true,
 			unique: true,
 		},
-		passwrod: {
+		password: {
 			type: DataTypes.STRING,
 			allowNull: false,
 		},
